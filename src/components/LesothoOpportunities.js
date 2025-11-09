@@ -54,7 +54,7 @@ const LesothoOpportunities = () => {
             duration: course.duration,
             type: course.type,
             badge: 'Popular',
-            image: instData.logoUrl || 'https://via.placeholder.com/800x400?text=Institution'
+            image: instData.logoUrl || '  https://via.placeholder.com/800x400?text=Institution'
           });
         }
 
@@ -263,4 +263,6 @@ const LesothoOpportunities = () => {
   );
 };
 
-export default LesothoOpportunities;
+export default LesothoOpportunities; 
+
+
