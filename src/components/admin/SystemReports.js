@@ -4,7 +4,6 @@ import { db } from '../../firebase';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import '../../styles/LesothoOpportunities.css';
 
-// ✅ Recharts imports
 import {
   BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -21,21 +20,21 @@ const SystemReports = () => {
   });
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // ✅ Chart data
   const entityData = [
     { name: 'Students', value: stats.totalStudents },
     { name: 'Institutions', value: stats.totalInstitutions },
     { name: 'Companies', value: stats.totalCompanies }
-  ];
+  ].filter(item => item.value > 0);
 
   const activityData = [
     { name: 'Jobs', value: stats.totalJobs },
     { name: 'Applications', value: stats.totalApplications },
     { name: 'New Users (7d)', value: stats.newRegistrations }
-  ];
+  ].filter(item => item.value > 0);
 
-  const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+  const COLORS = ['#5d47e6', '#2ecc71', '#ff6b6b', '#fbbf24', '#a78bfa'];
 
   useEffect(() => {
     fetchSystemReports();
@@ -43,6 +42,7 @@ const SystemReports = () => {
 
   const fetchSystemReports = async () => {
     setLoading(true);
+    setError('');
     try {
       const [
         studentsSnapshot,
@@ -55,7 +55,7 @@ const SystemReports = () => {
         getDocs(collection(db, 'institutions')),
         getDocs(collection(db, 'companies')),
         getDocs(collection(db, 'jobs')),
-        getDocs(collection(db, 'applications')) // or 'courseApplications' if needed
+        getDocs(collection(db, 'courseApplications'))
       ]);
 
       const sevenDaysAgo = new Date();
@@ -70,51 +70,53 @@ const SystemReports = () => {
       const newRegistrations = 
         recentStudents.size + recentInstitutions.size + recentCompanies.size;
 
-      // Recent activity
-      const recentJobsSnapshot = await getDocs(
+      const recentJobs = await getDocs(
         query(collection(db, 'jobs'), orderBy('postedAt', 'desc'), where('postedAt', '>=', sevenDaysAgo))
       );
-      const recentApplicationsSnapshot = await getDocs(
-        query(collection(db, 'applications'), orderBy('appliedAt', 'desc'), where('appliedAt', '>=', sevenDaysAgo))
+      const recentApplications = await getDocs(
+        query(collection(db, 'courseApplications'), orderBy('appliedAt', 'desc'), where('appliedAt', '>=', sevenDaysAgo))
       );
 
       const activity = [
-        ...recentJobsSnapshot.docs.map(doc => ({
+        ...recentJobs.docs.map(doc => ({
           type: 'job',
           id: doc.id,
-          title: doc.data().title || 'New Job Posted',
-          name: doc.data().companyName || 'Company',
+          title: `New Job: ${doc.data().title || 'Untitled'}`,
+          name: `@ ${doc.data().companyName || 'Company'}`,
           timestamp: doc.data().postedAt?.toDate()
         })),
-        ...recentApplicationsSnapshot.docs.map(doc => ({
+        ...recentApplications.docs.map(doc => ({
           type: 'application',
           id: doc.id,
           title: 'New Application',
-          name: 'Student',
+          name: `Course: ${doc.data().courseName || 'N/A'}`,
           timestamp: doc.data().appliedAt?.toDate()
         })),
         ...recentStudents.docs.map(doc => ({
           type: 'registration',
           id: doc.id,
-          title: 'Student Registered',
-          name: doc.data().email,
+          title: 'Student Registration',
+          name: doc.data().email || 'N/A',
           timestamp: doc.data().createdAt?.toDate()
         })),
         ...recentInstitutions.docs.map(doc => ({
           type: 'registration',
           id: doc.id,
-          title: 'Institution Registered',
-          name: doc.data().name,
+          title: 'Institution Registration',
+          name: doc.data().name || 'N/A',
           timestamp: doc.data().createdAt?.toDate()
         })),
         ...recentCompanies.docs.map(doc => ({
           type: 'registration',
           id: doc.id,
-          title: 'Company Registered',
-          name: doc.data().name,
+          title: 'Company Registration',
+          name: doc.data().name || 'N/A',
           timestamp: doc.data().createdAt?.toDate()
         }))
-      ].sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
+      ]
+        .filter(item => item.timestamp)
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .slice(0, 10);
 
       setStats({
         totalStudents: studentsSnapshot.size,
@@ -124,10 +126,10 @@ const SystemReports = () => {
         totalApplications: applicationsSnapshot.size,
         newRegistrations
       });
-
       setRecentActivity(activity);
-    } catch (error) {
-      console.error('Error fetching reports:', error);
+    } catch (err) {
+      console.error('Analytics fetch error:', err);
+      setError('❌ Failed to load analytics. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -135,41 +137,50 @@ const SystemReports = () => {
 
   const getActivityIcon = (type) => {
     switch (type) {
-      case 'job': return 'fas fa-briefcase';
-      case 'application': return 'fas fa-file-contract';
-      case 'registration': return 'fas fa-user-plus';
-      default: return 'fas fa-info-circle';
+      case 'job': return '💼';
+      case 'application': return '📄';
+      case 'registration': return '👤';
+      default: return 'ℹ️';
     }
   };
 
-  const getMetricIcon = (metric) => {
-    switch (metric) {
-      case 'totalStudents': return 'fas fa-graduation-cap';
-      case 'totalInstitutions': return 'fas fa-school';
-      case 'totalCompanies': return 'fas fa-building';
-      case 'totalJobs': return 'fas fa-bullhorn';
-      case 'totalApplications': return 'fas fa-envelope-open-text';
-      case 'newRegistrations': return 'fas fa-chart-line';
-      default: return 'fas fa-chart-bar';
-    }
+  const getMetricData = (key) => {
+    const metrics = {
+      totalStudents: { icon: '🎓', label: 'Students', color: '#5d47e6' },
+      totalInstitutions: { icon: '🏫', label: 'Institutions', color: '#2ecc71' },
+      totalCompanies: { icon: '🏢', label: 'Companies', color: '#ff6b6b' },
+      totalJobs: { icon: '📣', label: 'Jobs Posted', color: '#fbbf24' },
+      totalApplications: { icon: '📩', label: 'Applications', color: '#a78bfa' },
+      newRegistrations: { icon: '📈', label: 'New (7d)', color: '#5d47e6' }
+    };
+    return metrics[key] || { icon: '📊', label: key, color: '#9ca3af' };
   };
 
-  const getMetricColor = (metric) => {
-    switch (metric) {
-      case 'totalStudents': return '#4F46E5'; // indigo-600
-      case 'totalInstitutions': return '#10B981'; // emerald-500
-      case 'totalCompanies': return '#F59E0B'; // amber-500
-      case 'totalJobs': return '#EF4444'; // red-500
-      case 'totalApplications': return '#8B5CF6'; // violet-500
-      case 'newRegistrations': return '#0EA5E9'; // sky-500
-      default: return '#6B7280'; // gray-500
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="lo-chart-tooltip">
+          <p className="lo-label">{label}</p>
+          <p className="lo-value">{payload[0].value.toLocaleString()}</p>
+        </div>
+      );
     }
+    return null;
   };
 
   if (loading) {
     return (
       <div className="lo-institute-module">
-        <div className="lo-no-data">Loading system analytics...</div>
+        <div className="lo-module-header">
+          <h2>
+            <i className="fas fa-chart-pie"></i>
+            System Reports & Analytics
+          </h2>
+        </div>
+        <div className="lo-no-data">
+          <div className="lo-spinner"></div>
+          <p>Loading system analytics...</p>
+        </div>
       </div>
     );
   }
@@ -178,84 +189,123 @@ const SystemReports = () => {
     <div className="lo-institute-module">
       <div className="lo-module-header">
         <h2>
-          <i className="fas fa-chart-pie" style={{ marginRight: '12px', color: '#4F46E5' }}></i>
+          <i className="fas fa-chart-pie"></i>
           System Reports & Analytics
         </h2>
         <p>Real-time overview of platform activity and user engagement</p>
       </div>
 
+      {error && (
+        <div className="lo-alert lo-alert-error">
+          <i className="fas fa-exclamation-circle"></i>
+          {error}
+        </div>
+      )}
+
       {/* Stats Cards */}
-      <div className="lo-stats-grid">
-        {Object.entries(stats).map(([key, value]) => (
-          <div className="lo-stat-card" key={key}>
-            <div className="lo-stat-icon">
-              <i 
-                className={getMetricIcon(key)} 
-                style={{ color: getMetricColor(key) }}
-              ></i>
+      <div className="row g-3 mb-4">
+        {Object.entries(stats).map(([key, value]) => {
+          const { icon, label, color } = getMetricData(key);
+          return (
+            <div key={key} className="col-sm-6 col-lg-4">
+              <div className="lo-stat-card" style={{ borderLeft: `4px solid ${color}` }}>
+                <div className="lo-stat-icon" style={{ backgroundColor: `${color}15`, color }}>
+                  {icon}
+                </div>
+                <div className="lo-stat-content">
+                  <div className="lo-stat-value">{value.toLocaleString()}</div>
+                  <div className="lo-stat-label">{label}</div>
+                </div>
+              </div>
             </div>
-            <div className="lo-stat-content">
-              <h3>{value.toLocaleString()}</h3>
-              <p>
-                {key === 'totalStudents' && 'Students'}
-                {key === 'totalInstitutions' && 'Institutions'}
-                {key === 'totalCompanies' && 'Companies'}
-                {key === 'totalJobs' && 'Jobs Posted'}
-                {key === 'totalApplications' && 'Applications'}
-                {key === 'newRegistrations' && 'New (7d)'}
-              </p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Charts Section */}
-      <div className="lo-charts-section">
-        <div className="lo-chart-card">
-          <h3 className="lo-card-title">
-            <i className="fas fa-users" style={{ marginRight: '8px' }}></i>
-            User Distribution
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={entityData}
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-              >
-                {entityData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => value.toLocaleString()} />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+      <div className="row g-4 mb-4">
+        <div className="col-lg-6">
+          <div className="lo-chart-card">
+            <h3 className="lo-card-title">
+              <i className="fas fa-users"></i>
+              User Distribution
+            </h3>
+            <div style={{ height: '300px', width: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={entityData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={2}
+                    dataKey="value"
+                    label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                  >
+                    {entityData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={COLORS[index % COLORS.length]} 
+                        stroke="none"
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend 
+                    layout="horizontal" 
+                    verticalAlign="bottom" 
+                    align="center"
+                    wrapperStyle={{ paddingTop: '16px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
 
-        <div className="lo-chart-card">
-          <h3 className="lo-card-title">
-            <i className="fas fa-tasks" style={{ marginRight: '8px' }}></i>
-            Platform Activity
-          </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={activityData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip formatter={(value) => value.toLocaleString()} />
-              <Legend />
-              <Bar dataKey="value" name="Count">
-                {activityData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="col-lg-6">
+          <div className="lo-chart-card">
+            <h3 className="lo-card-title">
+              <i className="fas fa-tasks"></i>
+              Platform Activity
+            </h3>
+            <div style={{ height: '300px', width: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={activityData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis 
+                    dataKey="name" 
+                    angle={-20} 
+                    textAnchor="end"
+                    height={80}
+                    tick={{ fill: 'var(--lo-text-muted)', fontSize: 12 }}
+                  />
+                  <YAxis 
+                    tick={{ fill: 'var(--lo-text-muted)' }} 
+                    tickFormatter={(value) => value.toLocaleString()}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                  <Bar 
+                    dataKey="value" 
+                    name="Count" 
+                    radius={[6, 6, 0, 0]}
+                  >
+                    {activityData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={COLORS[(index + 2) % COLORS.length]}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -263,12 +313,15 @@ const SystemReports = () => {
       <div className="lo-section">
         <div className="lo-section-header">
           <h3>
-            <i className="fas fa-bell" style={{ marginRight: '8px' }}></i>
-            Recent Activity
+            <i className="fas fa-history"></i>
+            Recent Activity (Last 7 Days)
           </h3>
         </div>
         {recentActivity.length === 0 ? (
-          <div className="lo-no-data">No recent activity found.</div>
+          <div className="lo-no-data">
+            <i className="fas fa-inbox"></i>
+            <p>No recent activity found.</p>
+          </div>
         ) : (
           <div className="lo-table-container">
             <table className="lo-table">
@@ -276,33 +329,35 @@ const SystemReports = () => {
                 <tr>
                   <th>Activity</th>
                   <th>Details</th>
-                  <th>Time</th>
+                  <th style={{ width: '180px' }}>Time</th>
                 </tr>
               </thead>
               <tbody>
-                {recentActivity.map((activity, index) => (
-                  <tr key={index}>
-                    <td>
-                      <i 
-                        className={getActivityIcon(activity.type)} 
-                        style={{ 
-                          color: getMetricColor(activity.type === 'job' ? 'totalJobs' : 
-                                   activity.type === 'application' ? 'totalApplications' : 'newRegistrations'),
-                          marginRight: '12px',
-                          fontSize: '18px'
-                        }}
-                      ></i>
-                      {activity.title}
-                    </td>
-                    <td>{activity.name}</td>
-                    <td>
-                      {activity.timestamp ? 
-                        activity.timestamp.toLocaleString() : 
-                        'N/A'
-                      }
-                    </td>
-                  </tr>
-                ))}
+                {recentActivity.map((act, idx) => {
+                  const { icon } = getMetricData(
+                    act.type === 'job' ? 'totalJobs' : 
+                    act.type === 'application' ? 'totalApplications' : 'newRegistrations'
+                  );
+                  return (
+                    <tr key={idx}>
+                      <td>
+                        <span className="me-2">{icon}</span>
+                        {act.title}
+                      </td>
+                      <td>{act.name}</td>
+                      <td>
+                        {act.timestamp 
+                          ? act.timestamp.toLocaleString('en-GB', {
+                              day: '2-digit',
+                              month: 'short',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })
+                          : '—'}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -310,14 +365,18 @@ const SystemReports = () => {
       </div>
 
       {/* Export Section */}
-      <div className="lo-export-section">
-        <button className="lo-btn lo-btn-primary" disabled>
-          <i className="fas fa-file-export" style={{ marginRight: '8px' }}></i>
+      <div className="lo-publish-section mt-4">
+        <h4>
+          <i className="fas fa-file-export"></i>
+          Export Reports
+        </h4>
+        <button className="lo-btn lo-btn-secondary" disabled>
+          <i className="fas fa-download"></i>
           Export Full Report (CSV)
         </button>
-        <p className="lo-export-note">
-          <i className="fas fa-info-circle" style={{ marginRight: '6px' }}></i>
-          Full analytics export and custom date ranges coming soon.
+        <p className="lo-hint mt-2">
+          <i className="fas fa-info-circle"></i>
+          Coming soon: Custom date ranges, PDF export, and automated reports.
         </p>
       </div>
     </div>

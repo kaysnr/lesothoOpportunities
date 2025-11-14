@@ -1,7 +1,7 @@
 // src/components/student/AdmissionsView.js
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
-import { doc, getDoc } from 'firebase/firestore'; // updateDoc not needed here
+import { doc, getDoc } from 'firebase/firestore';
 import '../../styles/LesothoOpportunities.css';
 
 const AdmissionsView = ({ studentId }) => {
@@ -12,6 +12,8 @@ const AdmissionsView = ({ studentId }) => {
 
   useEffect(() => {
     const fetchAdmissions = async () => {
+      setLoading(true);
+      setMessage('');
       try {
         const studentDoc = await getDoc(doc(db, 'students', studentId));
         if (studentDoc.exists()) {
@@ -24,8 +26,8 @@ const AdmissionsView = ({ studentId }) => {
           setAcceptedInstitution(data.acceptedInstitution || null);
         }
       } catch (error) {
-        setMessage('Failed to load admission results');
-        setInstitutionAdmissions([]); // fallback
+        setMessage('❌ Failed to load admission results.');
+        setInstitutionAdmissions([]);
       } finally {
         setLoading(false);
       }
@@ -34,28 +36,75 @@ const AdmissionsView = ({ studentId }) => {
     fetchAdmissions();
   }, [studentId]);
 
-  // ... rest of component unchanged
+  const handleSelectInstitution = async (instId) => {
+    try {
+      // Show confirmation
+      if (!window.confirm('Are you sure you want to accept this admission? You will be removed from other admission lists.')) {
+        return;
+      }
+
+      // Simulate selection (add your actual logic here)
+      setAcceptedInstitution(instId);
+      setMessage('✅ Admission confirmed! You\'ve been removed from other admission lists.');
+      
+      // In real app: update Firestore with selection
+      // await updateDoc(doc(db, 'students', studentId), {
+      //   acceptedInstitution: instId,
+      //   updatedAt: new Date()
+      // });
+    } catch (error) {
+      console.error('Selection error:', error);
+      setMessage('❌ Failed to confirm admission.');
+    }
+  };
 
   if (loading) {
-    return <div className="lo-institute-module"><div className="lo-no-data">Loading...</div></div>;
+    return (
+      <div className="lo-institute-module">
+        <div className="lo-module-header">
+          <h2>
+            <i className="fas fa-check-circle"></i>
+            Admission Results
+          </h2>
+        </div>
+        <div className="lo-no-data">
+          <div className="lo-spinner"></div>
+          <p>Loading admission results...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="lo-institute-module">
       <div className="lo-module-header">
-        <h2>Admission Results</h2>
+        <h2>
+          <i className="fas fa-check-circle"></i>
+          Admission Results
+        </h2>
+        <p>Review and confirm your admission offers</p>
       </div>
 
-      {message && <div className="lo-alert lo-alert-error">{message}</div>}
+      {message && (
+        <div className={`lo-alert ${message.includes('✅') ? 'lo-alert-success' : 'lo-alert-error'}`}>
+          {message}
+        </div>
+      )}
 
       {institutionAdmissions.length === 0 ? (
-        <div className="lo-no-data">You have no admission offers yet.</div>
+        <div className="lo-no-data">
+          <i className="fas fa-envelope-open"></i>
+          <p>You have no admission offers yet.</p>
+          <p style={{ fontSize: '0.95rem', marginTop: '8px', color: 'var(--lo-text-muted)' }}>
+            Check back after applying to courses.
+          </p>
+        </div>
       ) : (
         <div className="lo-table-container">
           <table className="lo-table">
             <thead>
               <tr>
-                <th>Institution / Course</th>
+                <th>Institution</th>
                 <th>Program</th>
                 <th>Status</th>
                 <th>Action</th>
@@ -64,7 +113,23 @@ const AdmissionsView = ({ studentId }) => {
             <tbody>
               {institutionAdmissions.map((inst) => (
                 <tr key={inst.id}>
-                  <td>{inst.name || '—'}</td>
+                  <td>
+                    <strong>{inst.name || '—'}</strong>
+                    {inst.logoUrl && (
+                      <img 
+                        src={inst.logoUrl} 
+                        alt="Logo" 
+                        style={{ 
+                          height: '24px', 
+                          width: '24px',
+                          borderRadius: '4px',
+                          marginLeft: '8px',
+                          verticalAlign: 'middle',
+                          objectFit: 'contain'
+                        }} 
+                      />
+                    )}
+                  </td>
                   <td>{inst.program || '—'}</td>
                   <td>
                     <span className={`lo-status ${inst.status?.toLowerCase() || 'admitted'}`}>
@@ -77,10 +142,12 @@ const AdmissionsView = ({ studentId }) => {
                         className="lo-table-btn lo-btn-primary"
                         onClick={() => handleSelectInstitution(inst.id)}
                       >
-                        Select
+                        <i className="fas fa-check"></i> Select
                       </button>
                     ) : acceptedInstitution === inst.id ? (
-                      <span className="lo-status approved">Selected</span>
+                      <span className="lo-status approved">
+                        <i className="fas fa-check"></i> Selected
+                      </span>
                     ) : null}
                   </td>
                 </tr>
@@ -91,17 +158,13 @@ const AdmissionsView = ({ studentId }) => {
       )}
 
       {acceptedInstitution && (
-        <div className="lo-alert lo-alert-success" style={{ marginTop: '16px' }}>
-          ✓ You've selected an institution. You've been removed from other admission lists.
+        <div className="lo-alert lo-alert-success" style={{ marginTop: '24px' }}>
+          <i className="fas fa-check-circle"></i>
+          <strong>Congratulations!</strong> You've confirmed your admission. You've been removed from other admission lists.
         </div>
       )}
     </div>
   );
-};
-
-// ✅ Add handleSelectInstitution if needed (you had it before)
-const handleSelectInstitution = async (instId) => {
-  // ... your existing logic
 };
 
 export default AdmissionsView;

@@ -1,14 +1,11 @@
 /* src/styles/LesothoOpportunities.css */
+/* Bootstrap Integration */
+@import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 
 /* ==============================
    🎨 Theme & Custom Properties
    ============================== */
-@property --gradient-pos {
-  syntax: "<percentage>";
-  initial-value: 0%;
-  inherits: false;
-}
-
 :root {
   /* 🔵 Core Palette */
   --lo-purple-darkest: #0f0c1e;
@@ -30,13 +27,8 @@
   --lo-shadow-md: 0 6px 16px rgba(0, 0, 0, 0.25);
   --lo-shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.3);
   --lo-transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  --lo-radius: 16px;
-  --lo-radius-lg: 20px;
-
-  /* 📏 Spacing */
-  --gap-sm: clamp(12px, 2vw, 20px);
-  --gap-md: clamp(20px, 3vw, 30px);
-  --gap-lg: clamp(30px, 5vw, 50px);
+  --lo-radius: 12px;
+  --lo-radius-lg: 16px;
 }
 
 /* 🌐 Reset + Base */
@@ -60,118 +52,67 @@ body {
 }
 
 /* ==============================
-   🌀 Animations
+   🏠 Main Layout
    ============================== */
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.lo-main-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+.lo-main-content {
+  display: flex;
+  flex: 1;
+  position: relative;
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.animate-on-scroll {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
-}
-
-.animate-on-scroll.appear {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 0s;
+.lo-content-area {
+  flex: 1;
+  padding: 20px;
+  min-width: 0;
 }
 
 /* ==============================
-   🏠 Header
+   📱 Header & Navigation
    ============================== */
-
 .lo-header {
   background-color: var(--lo-purple-darkest);
-  padding: clamp(16px, 3vw, 20px) clamp(20px, 4vw, 40px);
+  padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: var(--lo-shadow-md);
   position: sticky;
   top: 0;
-  z-index: 2000;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: padding 0.4s ease, background 0.4s ease;
-}
-
-.lo-header.shrink {
-  padding: clamp(8px, 2vw, 10px) clamp(16px, 4vw, 30px);
-  background-color: rgba(15, 12, 30, 0.95);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
 }
 
 .lo-logo {
   display: flex;
   align-items: center;
-  gap: clamp(12px, 2vw, 20px);
+  gap: 12px;
   font-weight: 800;
-  cursor: pointer;
 }
 
-.lo-logo-icon {
-  font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+.lo-logo-text {
+  font-size: 1.4rem;
   background: linear-gradient(90deg, var(--lo-accent), var(--lo-purple-main));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-.lo-logo-text {
-  font-size: clamp(1.3rem, 3.8vw, 1.6rem);
-  letter-spacing: -0.5px;
-  background: linear-gradient(90deg, var(--lo-accent), var(--lo-purple-main), var(--lo-accent));
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: gradientShift 4s ease infinite;
-}
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* ==============================
-   📱 Mobile Nav & Hamburger
-   ============================== */
-
+/* Hamburger Menu */
 .lo-hamburger {
   display: none;
   flex-direction: column;
   justify-content: space-around;
-  width: 32px;
+  width: 30px;
   height: 24px;
   background: transparent;
   border: none;
   cursor: pointer;
-  z-index: 2500;
+  padding: 0;
 }
 
 .lo-hamburger span {
@@ -192,159 +133,496 @@ body {
   transform: rotate(-45deg) translate(6px, -6px);
 }
 
-.lo-nav-menu {
-  display: flex;
-  gap: clamp(16px, 2.5vw, 32px);
-  align-items: center;
+/* ==============================
+   📊 Sidebar (Desktop & Mobile)
+   ============================== */
+.lo-sidebar-wrapper {
+  position: relative;
 }
 
-@media (max-width: 1024px) {
-  .lo-hamburger { display: flex; }
-  .lo-nav-menu {
-    position: fixed;
-    top: 70px;
-    left: 0;
-    right: 0;
-    background: var(--lo-purple-darkest);
-    flex-direction: column;
-    padding: 24px 0;
-    gap: 12px;
-    box-shadow: var(--lo-shadow-lg);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-20px);
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 1500;
-  }
-  .lo-nav-menu.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-  }
-  .lo-nav-item {
-    padding: 16px 24px;
-    width: 100%;
-    text-align: center;
-    justify-content: center;
-  }
+.lo-sidebar-content {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.lo-sidebar {
+  background: var(--lo-bg-card);
+  border-radius: var(--lo-radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--lo-shadow-md);
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+}
+
+.lo-sidebar-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.lo-sidebar-section {
+  margin-bottom: 1.5rem;
+}
+
+.lo-sidebar-title {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: var(--lo-purple-main);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lo-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--lo-radius);
+  cursor: pointer;
+  transition: var(--lo-transition);
+  margin-bottom: 0.5rem;
+}
+
+.lo-sidebar-item:hover {
+  background: rgba(93, 71, 230, 0.25);
+}
+
+.lo-sidebar-item.active {
+  background: var(--lo-purple-main);
+  color: white;
+  box-shadow: var(--lo-shadow-sm);
 }
 
 /* ==============================
-   🔗 Nav Items
+   🏫 Module Styles
    ============================== */
+.lo-institute-module {
+  background: var(--lo-bg-card);
+  border-radius: var(--lo-radius-lg);
+  padding: 2rem;
+  box-shadow: var(--lo-shadow-md);
+  margin-bottom: 2rem;
+}
 
-.lo-nav-item {
+.lo-module-header h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 10px 18px;
+  gap: 0.75rem;
+}
+
+.lo-module-header p {
+  color: var(--lo-text-muted);
+  margin-bottom: 1.5rem;
+}
+
+/* ==============================
+   📊 Stats & Cards
+   ============================== */
+.lo-stat-card {
+  background: var(--lo-bg-card);
   border-radius: var(--lo-radius);
-  cursor: pointer;
-  position: relative;
+  padding: 1.5rem;
+  text-align: center;
+  border: 1px solid var(--lo-border);
   transition: var(--lo-transition);
-  font-weight: 600;
-  font-size: clamp(0.95rem, 2vw, 1rem);
-  white-space: nowrap;
+  height: 100%;
 }
 
-.lo-nav-item:hover,
-.lo-nav-item:focus-visible {
-  background: rgba(93, 71, 230, 0.25);
+.lo-stat-card:hover {
   transform: translateY(-3px);
+  border-color: var(--lo-purple-main);
 }
 
-.lo-nav-item::after {
-  content: '';
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  width: 0;
-  height: 3px;
-  background: var(--lo-accent);
-  border-radius: 3px;
-  transform: translateX(-50%);
-  transition: width 0.4s ease;
+.lo-stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
 }
 
-.lo-nav-item:hover::after,
-.lo-nav-item.active::after {
-  width: 70%;
+.lo-stat-label {
+  color: var(--lo-text-muted);
+  font-size: 0.9rem;
 }
 
-.lo-nav-item.active {
+.lo-stat-card.approved { border-top: 4px solid #2ecc71; }
+.lo-stat-card.rejected { border-top: 4px solid #ef4444; }
+.lo-stat-card.info { border-top: 4px solid #5d47e6; }
+.lo-stat-card.pending { border-top: 4px solid #fbbf24; }
+
+/* ==============================
+   📋 Tables
+   ============================== */
+.lo-table-container {
+  overflow-x: auto;
+  border-radius: var(--lo-radius);
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.lo-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+  color: var(--lo-text);
+}
+
+.lo-table th {
+  background: rgba(93, 71, 230, 0.2);
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--lo-purple-main);
+}
+
+.lo-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--lo-border);
+}
+
+.lo-table tr:hover td {
+  background: rgba(93, 71, 230, 0.08);
+}
+
+/* ==============================
+   🎯 Status Badges
+   ============================== */
+.lo-status {
+  padding: 0.375rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.lo-status.approved,
+.lo-status.admitted,
+.lo-status.accepted {
+  background: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+}
+
+.lo-status.pending {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.lo-status.rejected {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.lo-status.waitlisted {
+  background: rgba(156, 163, 175, 0.15);
+  color: #9ca3af;
+}
+
+.lo-status.suspended {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+/* ==============================
+   🔘 Buttons
+   ============================== */
+.lo-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--lo-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--lo-transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lo-btn-primary {
   background: var(--lo-purple-main);
-  transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(93, 71, 230, 0.4);
+  color: white;
 }
 
-.lo-nav-item i { font-size: 1.2rem; }
+.lo-btn-primary:hover:not(:disabled) {
+  background: #4a35d4;
+  transform: translateY(-2px);
+}
+
+.lo-btn-secondary {
+  background: rgba(156, 163, 175, 0.2);
+  color: #9ca3af;
+}
+
+.lo-btn-secondary:hover:not(:disabled) {
+  background: rgba(156, 163, 175, 0.3);
+  color: #e5e7eb;
+}
+
+.lo-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.lo-table-btn {
+  padding: 0.5rem 1rem;
+  border-radius: var(--lo-radius);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  transition: var(--lo-transition);
+}
+
+.lo-btn-success {
+  background: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+}
+
+.lo-btn-success:hover:not(:disabled) {
+  background: rgba(46, 204, 113, 0.25);
+}
+
+.lo-btn-warning {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.lo-btn-warning:hover:not(:disabled) {
+  background: rgba(251, 191, 36, 0.25);
+}
+
+.lo-btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.lo-btn-danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.lo-btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* ==============================
+   📝 Forms
+   ============================== */
+.lo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.lo-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lo-form-group label {
+  font-weight: 600;
+  color: var(--lo-text);
+}
+
+.lo-form-control {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--lo-border);
+  border-radius: var(--lo-radius);
+  color: var(--lo-text);
+  font-size: 1rem;
+  outline: none;
+  transition: var(--lo-transition);
+}
+
+.lo-form-control:focus {
+  border-color: var(--lo-purple-main);
+  background: rgba(93, 71, 230, 0.15);
+  box-shadow: 0 0 0 3px rgba(93, 71, 230, 0.2);
+}
+
+.lo-form-control::placeholder {
+  color: var(--lo-text-muted);
+}
+
+/* ==============================
+   ❗ Alerts & Messages
+   ============================== */
+.lo-alert {
+  padding: 1rem 1.25rem;
+  border-radius: var(--lo-radius);
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.lo-alert-success {
+  background: rgba(46, 204, 113, 0.15);
+  border-left: 4px solid #2ecc71;
+  color: #2ecc71;
+}
+
+.lo-alert-error {
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 4px solid #ef4444;
+  color: #ef4444;
+}
+
+.lo-alert-warning {
+  background: rgba(251, 191, 36, 0.15);
+  border-left: 4px solid #fbbf24;
+  color: #fbbf24;
+}
+
+/* ==============================
+   🎨 Banner
+   ============================== */
+.lo-banner {
+  background: linear-gradient(135deg, var(--lo-purple-main), var(--lo-purple-mid));
+  border-radius: var(--lo-radius-lg);
+  padding: 3rem 2rem;
+  box-shadow: var(--lo-shadow-lg);
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.lo-banner-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.lo-banner-subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+/* ==============================
+   📦 Cards
+   ============================== */
+.lo-card {
+  background: var(--lo-bg-card);
+  border-radius: var(--lo-radius-lg);
+  padding: 2rem;
+  box-shadow: var(--lo-shadow-md);
+  border: 1px solid var(--lo-border);
+  transition: var(--lo-transition);
+}
+
+.lo-card:hover {
+  border-color: var(--lo-purple-main);
+  transform: translateY(-2px);
+}
+
+.lo-card-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem;
+  color: var(--lo-text);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Course Specific Styles */
+.lo-course-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--lo-text);
+}
+
+.lo-course-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: var(--lo-text-muted);
+  font-size: 0.95rem;
+}
+
+.lo-course-reqs {
+  font-size: 0.9rem;
+  color: var(--lo-text-muted);
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: rgba(93, 71, 230, 0.1);
+  border-radius: 8px;
+}
+
+.lo-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* ==============================
+   🌀 Spinner
+   ============================== */
+.lo-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top: 3px solid var(--lo-accent);
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ==============================
+   ❌ No Data
+   ============================== */
+.lo-no-data {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--lo-text-muted);
+}
+
+.lo-no-data i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+
+.lo-no-data p {
+  font-size: 1.2rem;
+  margin: 0;
+}
 
 /* ==============================
    👤 User Actions
    ============================== */
-
 .lo-user-actions {
   display: flex;
   align-items: center;
-  gap: clamp(12px, 2vw, 20px);
+  gap: 1rem;
 }
 
-.lo-search-bar {
-  display: flex;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 50px;
-  padding: 8px 18px;
-  transition: var(--lo-transition);
-}
-
-.lo-search-bar:hover,
-.lo-search-bar:focus-within {
-  background: rgba(255, 255, 255, 0.15);
-  transform: scale(1.02);
-}
-
-.lo-search-bar i { margin-right: 8px; color: var(--lo-text-muted); }
-.lo-search-bar input {
-  background: transparent;
-  border: none;
-  color: var(--lo-text);
-  outline: none;
-  font-size: 0.95rem;
-  width: 160px;
-  transition: width 0.4s ease;
-}
-.lo-search-bar:focus-within input { width: 220px; }
-
-.lo-notification,
-.lo-profile {
-  position: relative;
-  cursor: pointer;
-  font-size: 1.4rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.lo-notification-badge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background: var(--lo-accent);
-  color: var(--lo-purple-darkest);
-  border-radius: 50%;
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: bold;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  animation: pulse 1.8s infinite;
-}
-
-/* ➕ Profile Dropdown */
 .lo-profile-dropdown {
   position: relative;
 }
@@ -352,23 +630,15 @@ body {
 .lo-profile {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border-radius: 12px;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--lo-radius);
+  cursor: pointer;
   transition: var(--lo-transition);
 }
 
-.lo-profile:hover,
-.lo-profile:focus-visible {
+.lo-profile:hover {
   background: rgba(255, 255, 255, 0.1);
-}
-
-.lo-profile-name {
-  font-size: 0.95rem;
-  display: none;
-}
-@media (min-width: 769px) {
-  .lo-profile-name { display: inline; }
 }
 
 .lo-profile-menu {
@@ -378,212 +648,257 @@ body {
   background: var(--lo-bg-card);
   border-radius: var(--lo-radius);
   box-shadow: var(--lo-shadow-lg);
-  width: 220px;
+  min-width: 200px;
   overflow: hidden;
   z-index: 100;
-  animation: slideUp 0.3s ease;
+  animation: slideUp 0.2s ease;
 }
 
 .lo-profile-menu button {
   width: 100%;
   text-align: left;
-  padding: 14px 20px;
+  padding: 0.875rem 1rem;
   background: none;
   border: none;
   color: var(--lo-text);
-  font-size: 1rem;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   transition: var(--lo-transition);
 }
+
 .lo-profile-menu button:hover {
   background: rgba(93, 71, 230, 0.2);
 }
-.lo-profile-menu button i { min-width: 20px; text-align: center; }
 
-.lo-login-btn {
-  background: var(--lo-accent);
-  color: var(--lo-purple-darkest);
-  border: none;
-  padding: 8px 18px;
-  border-radius: 50px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--lo-transition);
+/* ==============================
+   📤 Publish Section
+   ============================== */
+.lo-publish-section {
+  background: rgba(93, 71, 230, 0.08);
+  border: 1px dashed var(--lo-purple-main);
+  border-radius: var(--lo-radius);
+  padding: 1.5rem;
+  text-align: center;
 }
-.lo-login-btn:hover {
-  background: var(--lo-accent-hover);
-  transform: scale(1.05);
+
+.lo-publish-section h4 {
+  margin: 0 0 1rem;
+  font-weight: 700;
+  color: var(--lo-text);
 }
 
 /* ==============================
-   📄 Main Layout
+   🔔 Hint
    ============================== */
-
-.lo-main-container {
-  max-width: 1400px;
-  margin: var(--gap-md) auto;
-  padding: 0 clamp(20px, 4vw, 40px);
+.lo-hint {
+  background: rgba(93, 71, 230, 0.1);
+  border-left: 4px solid var(--lo-purple-main);
+  padding: 0.75rem 1rem;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.95rem;
+  color: var(--lo-text-muted);
 }
 
-.lo-main-content {
-  display: flex;
-  gap: var(--gap-md);
+.lo-hint i {
+  margin-right: 0.5rem;
+  color: var(--lo-purple-light);
 }
 
+/* ==============================
+   🏁 Footer
+   ============================== */
+.lo-footer {
+  background: var(--lo-purple-darkest);
+  padding: 2rem;
+  margin-top: auto;
+  text-align: center;
+}
+
+.lo-footer-logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: linear-gradient(90deg, var(--lo-accent), var(--lo-purple-main));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lo-copyright {
+  color: var(--lo-text-muted);
+  margin: 0;
+}
+
+/* ==============================
+   📱 Mobile Responsive
+   ============================== */
 @media (max-width: 1024px) {
-  .lo-main-content { flex-direction: column; }
+  .lo-sidebar-content {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    height: 100vh;
+    background: var(--lo-bg-card);
+    z-index: 1000;
+    transition: left 0.3s ease;
+    box-shadow: var(--lo-shadow-lg);
+  }
+  
+  .lo-sidebar-wrapper.mobile-open .lo-sidebar-content {
+    left: 0;
+  }
+  
+  .lo-sidebar-wrapper.mobile-open .lo-sidebar-backdrop {
+    display: block;
+  }
+  
+  .lo-hamburger {
+    display: flex;
+  }
+  
+  .lo-sidebar {
+    position: static;
+    height: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .lo-header {
+    padding: 1rem;
+  }
+  
+  .lo-content-area {
+    padding: 1rem;
+  }
+  
+  .lo-institute-module {
+    padding: 1.5rem;
+  }
+  
+  .lo-banner {
+    padding: 2rem 1.5rem;
+  }
+  
+  .lo-banner-title {
+    font-size: 2rem;
+  }
+  
+  .lo-module-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .lo-table {
+    font-size: 0.875rem;
+  }
+  
+  .lo-table th,
+  .lo-table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .lo-card {
+    padding: 1.5rem;
+  }
+
+  .lo-form-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .lo-form-actions .lo-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .lo-card-actions {
+    flex-direction: column;
+  }
+
+  .lo-card-actions .lo-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .lo-logo-text {
+    font-size: 1.2rem;
+  }
+  
+  .lo-banner-title {
+    font-size: 1.75rem;
+  }
+  
+  .lo-banner-subtitle {
+    font-size: 1rem;
+  }
+  
+  .lo-stat-value {
+    font-size: 1.5rem;
+  }
+
+  .lo-table-btn {
+    width: 100%;
+    justify-content: center;
+    margin: 0.25rem 0;
+  }
+
+  .lo-course-meta {
+    font-size: 0.85rem;
+  }
 }
 
 /* ==============================
-   📊 Sidebar
+   🌀 Animations
    ============================== */
-
-.lo-sidebar {
-  width: 280px;
-  flex-shrink: 0;
-  background: var(--lo-bg-card);
-  border-radius: var(--lo-radius-lg);
-  padding: var(--gap-md);
-  box-shadow: var(--lo-shadow-md);
-  position: sticky;
-  top: 90px;
-  height: fit-content;
-  transition: transform 0.3s ease;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.lo-sidebar-section { margin-bottom: var(--gap-md); }
-
-.lo-sidebar-title {
-  font-size: 1.25rem;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--lo-purple-main);
-  position: relative;
-}
-.lo-sidebar-title::after {
-  content: '';
-  position: absolute;
-  bottom: -6px;
-  left: 0;
-  width: 40px;
-  height: 3px;
-  background: var(--lo-purple-main);
-  border-radius: 3px;
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.lo-sidebar-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: var(--lo-transition);
-  font-weight: 500;
-}
-.lo-sidebar-item:hover {
-  background: rgba(93, 71, 230, 0.25);
-  transform: translateX(6px);
-}
-.lo-sidebar-item.active {
-  background: var(--lo-purple-main);
-  color: white;
-  transform: translateX(8px);
-  box-shadow: 0 4px 12px rgba(93, 71, 230, 0.4);
+.lo-institute-module {
+  animation: slideUp 0.5s ease;
 }
 
 /* ==============================
-   🖼️ Banner & Sections
+   🎯 Utility Classes
    ============================== */
-
-.lo-banner {
-  background: linear-gradient(135deg, var(--lo-purple-main), var(--lo-purple-mid));
-  border-radius: var(--lo-radius-lg);
-  padding: clamp(40px, 8vw, 70px);
-  box-shadow: var(--lo-shadow-lg);
-  position: relative;
-  overflow: hidden;
-}
-.lo-banner::before {
-  content: '';
-  position: absolute;
-  top: -120px;
-  right: -120px;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
-  border-radius: 50%;
-  animation: float 10s ease-in-out infinite;
-}
-.lo-banner-content { position: relative; z-index: 2; max-width: 850px; }
-.lo-banner-title {
-  font-size: clamp(2.2rem, 6vw, 3.2rem);
-  font-weight: 800;
-  margin-bottom: 20px;
-  line-height: 1.15;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-}
-.lo-banner-subtitle {
-  font-size: clamp(1.2rem, 3.5vw, 1.5rem);
-  margin-bottom: 30px;
-  opacity: 0.9;
-}
-.lo-cta-button {
-  background: var(--lo-accent);
-  color: var(--lo-purple-darkest);
-  border: none;
-  padding: 16px 32px;
-  border-radius: 50px;
-  font-weight: 800;
-  font-size: 1.1rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  transition: var(--lo-transition);
-  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.5);
-  position: relative;
-  overflow: hidden;
-}
-.lo-cta-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  transition: left 0.7s;
-}
-.lo-cta-button:hover {
-  background: var(--lo-accent-hover);
-  transform: translateY(-4px) scale(1.03);
-  box-shadow: 0 12px 25px rgba(255, 107, 107, 0.6);
-}
-.lo-cta-button:hover::before {
-  left: 100%;
+.lo-section {
+  margin-top: 2rem;
 }
 
 .lo-section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--gap-md);
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 1rem;
 }
-.lo-section-title {
-  font-size: clamp(1.7rem, 4.5vw, 2.2rem);
-  font-weight: 700;
+
+.lo-section-header h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
 }
+
 .lo-view-all {
   background: none;
   border: none;
@@ -591,246 +906,449 @@ body {
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   cursor: pointer;
-  padding: 8px 20px;
+  padding: 0.5rem 1rem;
   border-radius: 50px;
   transition: var(--lo-transition);
 }
+
 .lo-view-all:hover {
   background: rgba(93, 71, 230, 0.15);
-  transform: translateX(6px);
+}
+
+.lo-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
 }
 
 /* ==============================
-   📦 Grid Cards
+   🎨 Stats Grid
    ============================== */
+.lo-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
 
+.lo-stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.lo-stat-content {
+  flex: 1;
+}
+
+/* ==============================
+   📊 Charts (for System Reports)
+   ============================== */
+.lo-charts-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.lo-chart-card {
+  background: var(--lo-bg-card);
+  border-radius: var(--lo-radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--lo-shadow-md);
+  border: 1px solid var(--lo-border);
+}
+
+.lo-chart-tooltip {
+  background: rgba(15, 12, 30, 0.95);
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--lo-purple-main);
+  box-shadow: var(--lo-shadow-lg);
+  min-width: 120px;
+}
+
+.lo-chart-tooltip .lo-label {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--lo-text);
+}
+
+.lo-chart-tooltip .lo-value {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--lo-purple-light);
+}
+
+/* ==============================
+   🎨 Grid Layout for Courses
+   ============================== */
 .lo-grid-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--gap-md);
+  gap: 1.5rem;
 }
 
 .lo-grid-item {
   background: var(--lo-bg-card);
-  border: 1px solid var(--lo-border);
   border-radius: var(--lo-radius-lg);
-  overflow: hidden;
+  padding: 1.5rem;
   box-shadow: var(--lo-shadow-md);
+  border: 1px solid var(--lo-border);
   transition: var(--lo-transition);
-  position: relative;
-  cursor: pointer;
 }
 
 .lo-grid-item:hover {
-  transform: translateY(-10px) scale(1.01);
-  box-shadow: var(--lo-shadow-lg);
+  transform: translateY(-3px);
   border-color: var(--lo-purple-main);
 }
 
-.lo-grid-image {
-  height: 180px;
+/* ==============================
+   🖼️ Image Styles
+   ============================== */
+.lo-upload-box {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed var(--lo-border);
+  border-radius: var(--lo-radius);
+  padding: 1.25rem;
+  text-align: center;
+  position: relative;
+}
+
+.lo-upload-btn {
+  background: var(--lo-purple-main);
+  color: white;
+  border: none;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: var(--lo-transition);
+  display: inline-block;
+}
+
+.lo-upload-btn:hover {
+  background: #4a35d4;
+  transform: translateY(-2px);
+}
+
+/* ==============================
+   📚 Subjects Input (for Student Profile)
+   ============================== */
+.lo-subjects-input {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.lo-subjects-input .lo-form-control {
+  flex: 1;
+  min-width: 180px;
+}
+
+.lo-subjects-list {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.lo-subject-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: var(--lo-bg-card);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.lo-remove-subject {
+  background: none;
+  border: none;
+  color: var(--lo-accent);
+  font-size: 1.4rem;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--lo-transition);
+}
+
+.lo-remove-subject:hover {
+  background: rgba(255, 107, 107, 0.2);
+}
+
+/* ==============================
+   📊 GPA Display
+   ============================== */
+.lo-gpa-display {
+  background: rgba(46, 204, 113, 0.15);
+  border-left: 4px solid #2ecc71;
+  padding: 1rem;
+  border-radius: 0 8px 8px 0;
+  font-weight: 600;
+  color: #2ecc71;
+  margin: 1.5rem 0;
+}
+
+/* ==============================
+   🔄 Loading States
+   ============================== */
+.skeleton {
+  background: var(--lo-bg-card);
+  border-radius: var(--lo-radius);
   overflow: hidden;
   position: relative;
 }
-.lo-grid-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.6s ease;
-}
-.lo-grid-item:hover .lo-grid-image img {
-  transform: scale(1.1);
-}
 
-.lo-badge {
+.skeleton::after {
+  content: '';
   position: absolute;
-  top: 16px;
-  right: 16px;
-  padding: 6px 16px;
-  border-radius: 50px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  backdrop-filter: blur(6px);
-  z-index: 2;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  animation: pulse 2s infinite;
-}
-.lo-badge.new { background: rgba(255, 107, 107, 0.2); color: var(--lo-accent); }
-.lo-badge.popular { background: rgba(93, 71, 230, 0.2); color: var(--lo-purple-main); }
-
-.lo-grid-content {
-  padding: 24px;
-}
-.lo-company-name,
-.lo-institution-name {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.lo-job-title { color: var(--lo-accent); font-weight: 600; margin-bottom: 12px; }
-.lo-program-name { color: var(--lo-purple-main); font-weight: 600; margin-bottom: 12px; }
-
-.lo-job-details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 20px;
-  font-size: 0.95rem;
-  color: var(--lo-text-muted);
-}
-.lo-job-details span { display: flex; align-items: center; gap: 6px; }
-
-.lo-apply-button,
-.lo-enroll-button {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 1.05rem;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  transition: var(--lo-transition);
-}
-.lo-apply-button {
-  background: var(--lo-accent);
-  color: var(--lo-purple-darkest);
-}
-.lo-apply-button:hover {
-  background: var(--lo-accent-hover);
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
-}
-.lo-enroll-button {
-  background: var(--lo-purple-main);
-  color: white;
-}
-.lo-enroll-button:hover {
-  background: #4a35d4;
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(93, 71, 230, 0.4);
-}
-
-/* ➕ Skeleton Loader Styles */
-.lo-grid-item.skeleton {
-  pointer-events: none;
-  background: var(--lo-bg-card);
-}
-.skeleton div {
-  background: linear-gradient(90deg, 
-    rgba(255,255,255,0.08), 
-    rgba(255,255,255,0.04), 
-    rgba(255,255,255,0.08)
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.2) 20%,
+    rgba(255, 255, 255, 0.5) 60%,
+    rgba(255, 255, 255, 0)
   );
-  animation: shimmer 1.5s infinite;
-  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+/* ==============================
+   📱 Enhanced Mobile Responsive
+   ============================== */
+@media (max-width: 768px) {
+  /* Improved table responsiveness */
+  .lo-table-container {
+    border-radius: 8px;
+  }
+  
+  .lo-table {
+    min-width: 500px;
+    font-size: 0.8rem;
+  }
+  
+  .lo-table th,
+  .lo-table td {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  /* Better button spacing on mobile */
+  .lo-form-actions .lo-btn,
+  .lo-card-actions .lo-btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Improved form layout */
+  .lo-form-row {
+    gap: 1rem;
+  }
+  
+  /* Better sidebar animation */
+  .lo-sidebar-content {
+    transition: transform 0.3s ease;
+  }
+  
+  .lo-sidebar-wrapper.mobile-open .lo-sidebar-content {
+    transform: translateX(0);
+  }
+  
+  /* Enhanced hamburger animation */
+  .lo-hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  
+  .lo-hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+}
+
+@media (max-width: 576px) {
+  /* Ultra-mobile optimizations */
+  .lo-banner-title {
+    font-size: 1.5rem;
+  }
+  
+  .lo-banner-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .lo-module-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .lo-card-title {
+    font-size: 1.1rem;
+  }
+  
+  /* Better table scrolling */
+  .lo-table-container {
+    margin: 0 -1rem;
+    width: calc(100% + 2rem);
+  }
+  
+  /* Improved button text */
+  .lo-table-btn span {
+    display: none;
+  }
+  
+  .lo-table-btn i {
+    margin-right: 0;
+  }
+  
+  /* Better form controls */
+  .lo-form-control {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
 }
 
 /* ==============================
-   📜 Footer
+   🎨 Enhanced Visual Improvements
    ============================== */
+/* Better focus states for accessibility */
+.lo-btn:focus-visible,
+.lo-sidebar-item:focus-visible,
+.lo-form-control:focus-visible {
+  outline: 2px solid var(--lo-purple-main);
+  outline-offset: 2px;
+}
 
-.lo-footer {
-  background: var(--lo-purple-darkest);
-  padding: clamp(40px, 5vw, 60px);
-  margin-top: var(--gap-lg);
-  border-radius: var(--lo-radius-lg);
-  text-align: center;
-  animation: slideUp 0.7s ease 0.6s forwards;
-  opacity: 0;
+/* Improved loading states */
+.lo-spinner {
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid var(--lo-accent);
+  width: 40px;
+  height: 40px;
 }
-.lo-footer-logo {
-  font-size: clamp(1.8rem, 4.5vw, 2.4rem);
-  font-weight: 800;
-  margin-bottom: 24px;
-  background: linear-gradient(90deg, var(--lo-accent), var(--lo-purple-main));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+
+/* Better hover transitions */
+.lo-btn,
+.lo-sidebar-item,
+.lo-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.lo-footer-links {
-  display: flex;
-  justify-content: center;
-  gap: clamp(18px, 3.5vw, 28px);
-  margin-bottom: 30px;
-  flex-wrap: wrap;
+
+/* Enhanced status badges */
+.lo-status {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
 }
-.lo-footer-link {
-  background: none;
-  border: none;
-  color: var(--lo-text-muted);
-  font-weight: 500;
-  padding: 6px 14px;
-  border-radius: 8px;
-  transition: var(--lo-transition);
-  cursor: pointer;
+
+/* Improved responsive charts */
+@media (max-width: 768px) {
+  .lo-charts-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .lo-chart-card {
+    padding: 1rem;
+  }
 }
-.lo-footer-link:hover {
-  color: white;
-  background: rgba(93, 71, 230, 0.2);
-}
-.lo-copyright {
-  font-size: 0.95rem;
-  color: var(--lo-text-muted);
+
+/* Better print styles */
+@media print {
+  .lo-header,
+  .lo-sidebar,
+  .lo-footer,
+  .lo-banner,
+  .lo-btn {
+    display: none !important;
+  }
+  
+  .lo-content-area {
+    padding: 0;
+    margin: 0;
+  }
+  
+  .lo-institute-module {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
 }
 
 /* ==============================
-   ❗ Error Screen
+   🔧 Utility Classes
    ============================== */
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
-.lo-error-screen {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 80vh;
-  padding: 20px;
+.text-truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-.lo-error-content {
-  text-align: center;
-  max-width: 500px;
-  background: var(--lo-bg-card);
-  padding: 40px;
-  border-radius: var(--lo-radius-lg);
-  box-shadow: var(--lo-shadow-lg);
+
+/* Loading skeleton animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
-.lo-error-content h2 {
-  font-size: 2.2rem;
-  margin-bottom: 20px;
-  color: var(--lo-accent);
-}
-.lo-error-content p {
-  font-size: 1.2rem;
-  margin-bottom: 30px;
-  color: var(--lo-text-muted);
-}
-.lo-retry-btn {
-  background: var(--lo-purple-main);
-  color: white;
-  border: none;
-  padding: 14px 32px;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--lo-transition);
-}
-.lo-retry-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(93, 71, 230, 0.4);
+
+.skeleton-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* ==============================
-   🎯 Accessibility & Performance
+   🎯 Touch Device Improvements
    ============================== */
+@media (hover: none) and (pointer: coarse) {
+  .lo-btn:hover,
+  .lo-sidebar-item:hover,
+  .lo-card:hover {
+    transform: none;
+  }
+  
+  .lo-btn:active,
+  .lo-sidebar-item:active {
+    transform: scale(0.98);
+  }
+}
 
+/* ==============================
+   🌙 Dark Mode Consistency
+   ============================== */
+@media (prefers-color-scheme: dark) {
+  .lo-main-container {
+    background: var(--lo-purple-darkest);
+  }
+}
+
+/* ==============================
+   ♿ Accessibility Improvements
+   ============================== */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -839,34 +1357,747 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .lo-grid-item:hover,
-  .lo-nav-item:hover,
-  .lo-apply-button:hover {
-    transform: none !important;
-  }
 }
 
+/* High contrast mode support */
 @media (prefers-contrast: high) {
-  .lo-accent,
-  .lo-apply-button,
-  .lo-badge,
-  .lo-notification-badge {
-    outline: 2px solid currentColor;
+  :root {
+    --lo-border: #ffffff;
+    --lo-text-muted: #ffffff;
+  }
+  
+  .lo-btn {
+    border: 1px solid currentColor;
   }
 }
+/* src/styles/LesothoOpportunities.css */
+/* Bootstrap Integration */
+@import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 
+/* ==============================
+   🎨 Theme & Custom Properties
+   ============================== */
+:root {
+  /* 🔵 Core Palette */
+  --lo-purple-darkest: #0f0c1e;
+  --lo-purple-dark: #1a152e;
+  --lo-purple-mid: #3a2c8c;
+  --lo-purple-main: #5d47e6;
+  --lo-purple-light: #dbeafe;
+  --lo-accent: #ff6b6b;
+  --lo-accent-hover: #ff5252;
+  --lo-accent-light: #ffd9d9;
+
+  /* 🌓 UI */
+  --lo-bg-main: var(--lo-purple-darkest);
+  --lo-bg-card: var(--lo-purple-dark);
+  --lo-text: #ffffff;
+  --lo-text-muted: rgba(255, 255, 255, 0.7);
+  --lo-border: rgba(93, 71, 230, 0.3);
+  --lo-shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.2);
+  --lo-shadow-md: 0 6px 16px rgba(0, 0, 0, 0.25);
+  --lo-shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.3);
+  --lo-transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  --lo-radius: 12px;
+  --lo-radius-lg: 16px;
+}
+
+/* 🌐 Reset + Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--lo-purple-darkest);
+  color: var(--lo-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ==============================
+   🏠 Main Layout
+   ============================== */
+.lo-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.lo-main-container {
+  flex: 1;
+}
+
+.lo-main-content {
+  display: flex;
+  min-height: calc(100vh - 80px);
+}
+
+.lo-content-area {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ==============================
+   📱 Header & Navigation
+   ============================== */
+.lo-header {
+  background-color: var(--lo-purple-darkest);
+  padding: 1rem 0;
+  box-shadow: var(--lo-shadow-md);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--lo-border);
+}
+
+.lo-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+}
+
+.lo-logo-icon {
+  font-size: 1.8rem;
+  color: var(--lo-purple-main);
+}
+
+.lo-logo-text {
+  font-size: 1.4rem;
+  background: linear-gradient(90deg, var(--lo-accent), var(--lo-purple-main));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Navigation Menu */
+.lo-nav-menu {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.lo-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--lo-radius);
+  cursor: pointer;
+  transition: var(--lo-transition);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lo-nav-item:hover {
+  background: rgba(93, 71, 230, 0.25);
+  transform: translateY(-2px);
+}
+
+.lo-nav-item.active {
+  background: var(--lo-purple-main);
+  color: white;
+  box-shadow: var(--lo-shadow-sm);
+}
+
+/* Mobile Navigation */
+.lo-nav-mobile-btn {
+  background: transparent;
+  border: none;
+  color: var(--lo-text);
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: var(--lo-transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.lo-nav-mobile-btn.active {
+  background: var(--lo-purple-main);
+  color: white;
+}
+
+/* ==============================
+   🔍 User Actions
+   ============================== */
+.lo-user-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.lo-search-bar {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50px;
+  padding: 0.5rem 1rem;
+  transition: var(--lo-transition);
+}
+
+.lo-search-bar:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.lo-search-bar i {
+  margin-right: 0.5rem;
+  color: var(--lo-text-muted);
+}
+
+.lo-search-bar input {
+  background: transparent;
+  border: none;
+  color: var(--lo-text);
+  outline: none;
+  width: 160px;
+}
+
+.lo-notification {
+  position: relative;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0.5rem;
+}
+
+.lo-notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--lo-accent);
+  color: var(--lo-purple-darkest);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.lo-profile {
+  cursor: pointer;
+  font-size: 1.4rem;
+  padding: 0.5rem;
+}
+
+/* ==============================
+   📊 Sidebar
+   ============================== */
+.lo-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: var(--lo-bg-card);
+  border-right: 1px solid var(--lo-border);
+  padding: 2rem 1.5rem;
+  position: sticky;
+  top: 80px;
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+
+.lo-sidebar-section {
+  margin-bottom: 2rem;
+}
+
+.lo-sidebar-title {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: var(--lo-purple-main);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lo-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--lo-radius);
+  cursor: pointer;
+  transition: var(--lo-transition);
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.lo-sidebar-item:hover {
+  background: rgba(93, 71, 230, 0.25);
+}
+
+.lo-sidebar-item.active {
+  background: var(--lo-purple-main);
+  color: white;
+  box-shadow: var(--lo-shadow-sm);
+}
+
+/* ==============================
+   🎨 Banner
+   ============================== */
+.lo-banner {
+  background: linear-gradient(135deg, var(--lo-purple-main), var(--lo-purple-mid));
+  padding: 4rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.lo-banner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.lo-banner-content {
+  position: relative;
+  z-index: 2;
+}
+
+.lo-banner-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.lo-banner-subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+  max-width: 600px;
+}
+
+.lo-cta-button {
+  background: var(--lo-accent);
+  color: var(--lo-purple-darkest);
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: var(--lo-transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+}
+
+.lo-cta-button:hover {
+  background: var(--lo-accent-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 25px rgba(255, 107, 107, 0.5);
+}
+
+/* ==============================
+   📦 Grid Items (Companies & Institutions)
+   ============================== */
+.lo-grid-item {
+  background: var(--lo-bg-card);
+  border-radius: var(--lo-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--lo-shadow-md);
+  border: 1px solid var(--lo-border);
+  transition: var(--lo-transition);
+  height: 100%;
+}
+
+.lo-grid-item:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--lo-shadow-lg);
+  border-color: var(--lo-purple-main);
+}
+
+.lo-grid-image {
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+.lo-grid-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.lo-grid-item:hover .lo-grid-image img {
+  transform: scale(1.1);
+}
+
+.lo-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  backdrop-filter: blur(6px);
+  z-index: 2;
+  box-shadow: var(--lo-shadow-sm);
+}
+
+.lo-badge.new {
+  background: rgba(255, 107, 107, 0.2);
+  color: var(--lo-accent);
+}
+
+.lo-badge.popular {
+  background: rgba(93, 71, 230, 0.2);
+  color: var(--lo-purple-main);
+}
+
+.lo-grid-content {
+  padding: 1.5rem;
+}
+
+.lo-company-name,
+.lo-institution-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lo-job-title,
+.lo-program-name {
+  color: var(--lo-purple-light);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.lo-job-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  color: var(--lo-text-muted);
+  font-size: 0.9rem;
+}
+
+.lo-job-details span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.lo-apply-button,
+.lo-enroll-button {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: var(--lo-radius);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--lo-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.lo-apply-button {
+  background: var(--lo-accent);
+  color: var(--lo-purple-darkest);
+}
+
+.lo-apply-button:hover {
+  background: var(--lo-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+}
+
+.lo-enroll-button {
+  background: var(--lo-purple-main);
+  color: white;
+}
+
+.lo-enroll-button:hover {
+  background: #4a35d4;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(93, 71, 230, 0.4);
+}
+
+/* ==============================
+   📊 Sections
+   ============================== */
+.lo-companies-section,
+.lo-institutions-section {
+  padding: 4rem 0;
+}
+
+.lo-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.lo-section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0;
+}
+
+.lo-view-all {
+  background: none;
+  border: none;
+  color: var(--lo-purple-main);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  transition: var(--lo-transition);
+}
+
+.lo-view-all:hover {
+  background: rgba(93, 71, 230, 0.15);
+  transform: translateX(4px);
+}
+
+/* ==============================
+   📈 Stats Cards
+   ============================== */
+.lo-stat-card {
+  background: var(--lo-bg-card);
+  border-radius: var(--lo-radius);
+  padding: 2rem;
+  text-align: center;
+  border: 1px solid var(--lo-border);
+  transition: var(--lo-transition);
+  height: 100%;
+}
+
+.lo-stat-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--lo-purple-main);
+  box-shadow: var(--lo-shadow-md);
+}
+
+.lo-stat-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(90deg, var(--lo-accent), var(--lo-purple-main));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lo-stat-label {
+  color: var(--lo-text-muted);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* ==============================
+   🏁 Footer
+   ============================== */
+.lo-footer {
+  background: var(--lo-purple-darkest);
+  border-top: 1px solid var(--lo-border);
+  margin-top: auto;
+}
+
+.lo-footer-logo {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  background: linear-gradient(90deg, var(--lo-accent), var(--lo-purple-main));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lo-footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.lo-footer-link {
+  background: none;
+  border: none;
+  color: var(--lo-text-muted);
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: var(--lo-transition);
+  cursor: pointer;
+}
+
+.lo-footer-link:hover {
+  color: white;
+  background: rgba(93, 71, 230, 0.2);
+}
+
+.lo-copyright {
+  font-size: 0.9rem;
+  color: var(--lo-text-muted);
+  margin: 0;
+}
+
+/* ==============================
+   🌀 Spinner
+   ============================== */
+.lo-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top: 3px solid var(--lo-accent);
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ==============================
+   📱 Mobile Responsive
+   ============================== */
 @media (max-width: 768px) {
-  .lo-banner { padding: 30px 20px; }
-  .lo-banner-title { font-size: 2rem; }
-  .lo-grid-container { grid-template-columns: 1fr; }
+  .lo-banner-title {
+    font-size: 2rem;
+  }
+  
+  .lo-banner-subtitle {
+    font-size: 1rem;
+  }
+  
+  .lo-section-title {
+    font-size: 1.5rem;
+  }
+  
+  .lo-grid-image {
+    height: 160px;
+  }
+  
+  .lo-company-name,
+  .lo-institution-name {
+    font-size: 1.1rem;
+  }
+  
+  .lo-stat-value {
+    font-size: 2rem;
+  }
+  
+  .lo-footer-links {
+    gap: 1rem;
+  }
+  
+  .lo-footer-link {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+  }
 }
 
-@media print {
-  .lo-header, .lo-sidebar, .lo-footer,
-  .lo-apply-button, .lo-enroll-button, .lo-view-all,
-  .lo-search-bar, .lo-notification, .lo-profile, .lo-hamburger {
-    display: none !important;
+@media (max-width: 576px) {
+  .lo-logo-text {
+    font-size: 1.1rem;
   }
-  body { background: white; color: black; }
-  .lo-grid-item { box-shadow: none; border: 1px solid #ccc; }
+  
+  .lo-banner {
+    padding: 3rem 0;
+  }
+  
+  .lo-banner-title {
+    font-size: 1.75rem;
+  }
+  
+  .lo-companies-section,
+  .lo-institutions-section {
+    padding: 3rem 0;
+  }
+  
+  .lo-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .lo-grid-content {
+    padding: 1rem;
+  }
+  
+  .lo-job-details {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* ==============================
+   🎯 Utility Classes
+   ============================== */
+.bg-light {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.text-muted {
+  color: var(--lo-text-muted) !important;
+}
+
+/* ==============================
+   🌀 Animations
+   ============================== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* ==============================
+   ♿ Accessibility
+   ============================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast support */
+@media (prefers-contrast: high) {
+  :root {
+    --lo-border: #ffffff;
+    --lo-text-muted: #ffffff;
+  }
 }

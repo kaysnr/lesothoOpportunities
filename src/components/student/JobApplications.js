@@ -1,141 +1,217 @@
-// src/components/student/CourseApplications.js
+// src/components/student/JobApplications.js
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, query, where, doc, getDoc, addDoc, arrayUnion, updateDoc } from 'firebase/firestore';
+import {
+  collection, getDocs, query, where, doc, getDoc, addDoc, arrayUnion, updateDoc
+} from 'firebase/firestore';
 import { db } from '../../firebase';
 import '../../styles/LesothoOpportunities.css';
 
-const CourseApplications = ({ studentId }) => {
-  const [courses, setCourses] = useState([]);
-  const [applications, setApplications] = useState({}); // courseId -> status
+const JobApplications = ({ studentId }) => {
+  const [jobs, setJobs] = useState([]);
+  const [applications, setApplications] = useState({});
   const [loading, setLoading] = useState(true);
+  const [studentGPA, setStudentGPA] = useState(0);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const fetchCoursesAndStatus = async () => {
+    const fetchData = async () => {
       setLoading(true);
+      setMessage('');
       try {
-        // Get student's GPA
         const studentDoc = await getDoc(doc(db, 'students', studentId));
         const studentData = studentDoc.data();
-        const studentGPA = studentData?.gpa || 0;
+        setStudentGPA(studentData?.gpa || 0);
 
-        // Fetch all active courses
-        const coursesQuery = query(collection(db, 'courses'), where('isActive', '==', true));
-        const courseSnapshot = await getDocs(coursesQuery);
-        const courseList = courseSnapshot.docs
-          .map(doc => ({ id: doc.id, ...doc.data() }))
-          .filter(course => !course.minGPA || studentGPA >= course.minGPA);
+        const jobsQuery = query(collection(db, 'jobs'), where('isActive', '==', true));
+        const jobSnapshot = await getDocs(jobsQuery);
+        const jobList = jobSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        // Fetch student's course applications
-        const appsQuery = query(collection(db, 'courseApplications'), where('studentId', '==', studentId));
+        const appsQuery = query(
+          collection(db, 'applications'),
+          where('studentId', '==', studentId)
+        );
         const appsSnapshot = await getDocs(appsQuery);
         const appStatus = {};
         appsSnapshot.forEach(doc => {
           const data = doc.data();
-          appStatus[data.courseId] = data.status || 'Pending';
+          appStatus[data.jobId] = {
+            id: doc.id,
+            status: data.status || 'Pending'
+          };
         });
 
-        setCourses(courseList);
+        setJobs(jobList);
         setApplications(appStatus);
       } catch (error) {
-        console.error('Error fetching courses:', error);
+        console.error('Error fetching jobs/applications:', error);
+        setMessage('❌ Failed to load job opportunities.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCoursesAndStatus();
+    fetchData();
   }, [studentId]);
 
-  const handleApply = async (courseId) => {
-    if (applications[courseId]) return;
+  const isQualified = (job) => {
+    return !job.minGPA || studentGPA >= job.minGPA;
+  };
+
+  const handleApply = async (jobId) => {
+    if (applications[jobId]) return;
 
     try {
-      // Create course application
-      await addDoc(collection(db, 'courseApplications'), {
-        studentId: studentId,
-        courseId: courseId,
+      const newAppRef = await addDoc(collection(db, 'applications'), {
+        studentId,
+        jobId,
         appliedAt: new Date(),
         status: 'Pending'
       });
 
-      // Optional: update student and course caches
       await updateDoc(doc(db, 'students', studentId), {
-        appliedCourses: arrayUnion(courseId)
+        appliedJobs: arrayUnion(jobId)
       });
 
-      setApplications(prev => ({ ...prev, [courseId]: 'Pending' }));
-    } catch (err) {
-      console.error('Course application failed:', err);
-      alert('Failed to apply. Please try again.');
+      await updateDoc(doc(db, 'jobs', jobId), {
+        applicants: arrayUnion(studentId)
+      });
+
+      setApplications(prev => ({
+        ...prev,
+        [jobId]: { id: newAppRef.id, status: 'Pending' }
+      }));
+
+      setMessage('✅ Application submitted successfully!');
+    } catch (error) {
+      console.error('Apply failed:', error);
+      setMessage('❌ Failed to apply. Please try again.');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="lo-institute-module">
+        <div className="lo-module-header">
+          <h2>
+            <i className="fas fa-briefcase"></i>
+            Job Opportunities
+          </h2>
+        </div>
+        <div className="lo-no-data">
+          <div className="lo-spinner"></div>
+          <p>Loading job opportunities...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="lo-institute-module">
       <div className="lo-module-header">
-        <h2>Available Courses</h2>
-        <p>Courses matching your academic profile</p>
+        <h2>
+          <i className="fas fa-briefcase"></i>
+          Job Opportunities
+        </h2>
+        <p>
+          {jobs.length} active jobs • Your GPA: <strong>{studentGPA.toFixed(2)}</strong>
+        </p>
       </div>
 
-      {loading ? (
-        <div className="lo-no-data">Loading courses...</div>
-      ) : courses.length === 0 ? (
+      {message && (
+        <div className={`lo-alert ${message.includes('✅') ? 'lo-alert-success' : 'lo-alert-error'}`}>
+          {message}
+        </div>
+      )}
+
+      {jobs.length === 0 ? (
         <div className="lo-no-data">
-          No courses match your current profile. Update your GPA in your profile to see more!
+          <i className="fas fa-search"></i>
+          <p>No job opportunities are currently available.</p>
+          <p style={{ fontSize: '0.95rem', marginTop: '8px', color: 'var(--lo-text-muted)' }}>
+            Check back later or contact support.
+          </p>
         </div>
       ) : (
         <div className="lo-table-container">
           <table className="lo-table">
             <thead>
               <tr>
-                <th>Course Title</th>
-                <th>Institution</th>
-                <th>Faculty</th>
-                <th>Min GPA</th>
+                <th>Job Title</th>
+                <th>Company</th>
+                <th>Location</th>
+                <th>
+                  <i className="fas fa-graduation-cap" title="Minimum GPA"></i> Min GPA
+                </th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {courses.map((course) => (
-                <tr key={course.id}>
-                  <td>{course.title}</td>
-                  <td>{course.institutionName || '—'}</td>
-                  <td>{course.faculty || '—'}</td>
-                  <td>
-                    {course.minGPA && !isNaN(course.minGPA)
-                      ? Number(course.minGPA).toFixed(2)
-                      : 'N/A'}
-                  </td>
-                  <td>
-                    {applications[course.id] ? (
-                      <span className={`lo-status ${applications[course.id].toLowerCase()}`}>
-                        {applications[course.id]}
-                      </span>
-                    ) : (
-                      '—'
-                    )}
-                  </td>
-                  <td>
-                    {applications[course.id] ? (
-                      <span className="lo-status pending">Applied</span>
-                    ) : (
-                      <button
-                        className="lo-table-btn lo-btn-primary"
-                        onClick={() => handleApply(course.id)}
-                      >
-                        Apply
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {jobs.map((job) => {
+                const app = applications[job.id];
+                const qualified = isQualified(job);
+                const status = app?.status || 'Eligible';
+
+                return (
+                  <tr key={job.id}>
+                    <td>
+                      <strong>{job.title}</strong>
+                      {!qualified && (
+                        <span className="lo-badge lo-badge-warning" style={{ marginLeft: '8px' }}>
+                          <i className="fas fa-exclamation-triangle"></i> Requires {job.minGPA}
+                        </span>
+                      )}
+                    </td>
+                    <td>{job.companyName || '—'}</td>
+                    <td>{job.location || 'Remote'}</td>
+                    <td>
+                      {job.minGPA ? Number(job.minGPA).toFixed(2) : '—'}
+                    </td>
+                    <td>
+                      {app ? (
+                        <span className={`lo-status ${app.status.toLowerCase()}`}>
+                          {app.status}
+                        </span>
+                      ) : qualified ? (
+                        <span className="lo-status pending">Eligible</span>
+                      ) : (
+                        <span className="lo-status suspended">Not Eligible</span>
+                      )}
+                    </td>
+                    <td>
+                      {app ? (
+                        <span className="lo-status approved">Applied</span>
+                      ) : qualified ? (
+                        <button
+                          className="lo-table-btn lo-btn-success"
+                          onClick={() => handleApply(job.id)}
+                        >
+                          <i className="fas fa-paper-plane"></i> Apply
+                        </button>
+                      ) : (
+                        <button
+                          className="lo-table-btn lo-btn-disabled"
+                          disabled
+                          title={`Your GPA (${studentGPA}) is below minimum (${job.minGPA})`}
+                        >
+                          GPA Too Low
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       )}
+
+      <div className="lo-hint" style={{ marginTop: '24px' }}>
+        <i className="fas fa-lightbulb"></i>
+        <strong>Tip:</strong> Update your GPA and certificates in <strong>My Profile</strong> to qualify for more opportunities.
+      </div>
     </div>
   );
 };
 
-export default CourseApplications;
+export default JobApplications;

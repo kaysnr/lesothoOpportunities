@@ -15,6 +15,8 @@ const InstituteDashboard = () => {
   const [user, setUser] = useState(null);
   const [instituteData, setInstituteData] = useState(null);
   const [activeView, setActiveView] = useState('profile');
+  const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -29,6 +31,7 @@ const InstituteDashboard = () => {
       } else {
         window.location.href = '/';
       }
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
@@ -38,46 +41,98 @@ const InstituteDashboard = () => {
     window.location.href = '/';
   };
 
-  if (!user || !instituteData) {
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  if (loading || !user || !instituteData) {
     return (
-      <div className="lo-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <div className="lo-spinner">Loading Institute Dashboard...</div>
+      <div className="d-flex justify-content-center align-items-center min-vh-100" style={{
+        background: 'linear-gradient(135deg, var(--lo-purple-mid), var(--lo-purple-main))'
+      }}>
+        <div className="skeleton" style={{ width: '200px', height: '60px', borderRadius: '12px' }}>
+          <div style={{ height: '20px', margin: '20px', borderRadius: '4px' }}></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="lo-container">
+    <div className="lo-main-container">
+      {/* Header */}
       <header className="lo-header">
-        <div className="lo-logo">
-          <i className="fas fa-university"></i>
-          <span>{instituteData.name || 'Institute'} Dashboard</span>
+        <div className="d-flex align-items-center">
+          <button 
+            className="lo-hamburger d-lg-none me-3"
+            onClick={toggleMobileMenu}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <div className="lo-logo">
+            <span role="img" aria-label="institution">🏫</span>
+            <span className="lo-logo-text">
+              Lesotho Opportunities — Institute
+            </span>
+          </div>
         </div>
+        
         <div className="lo-user-actions">
-          <div className="lo-profile">
-            <span>{instituteData.email}</span>
-            <button className="lo-logout-btn" onClick={handleLogout}>Logout</button>
+          <div className="lo-profile-dropdown">
+            <div className="lo-profile" tabIndex="0">
+              <i className="fas fa-university"></i>
+              <span className="lo-profile-name d-none d-md-inline">
+                {instituteData.name?.split(' ')[0] || 'Institute'}
+              </span>
+            </div>
+            <div className="lo-profile-menu">
+              <button onClick={handleLogout}>
+                <i className="fas fa-sign-out-alt"></i> Logout
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="lo-main-container">
-        <div className="lo-main-content">
-          <InstituteSidebar activeView={activeView} setActiveView={setActiveView} />
-          
-          <main className="lo-content-area">
-            {activeView === 'profile' && <InstitutionProfile />}
-            {activeView === 'faculties' && <ManageFaculties />}
-            {activeView === 'courses' && <ManageCourses />}
-            {activeView === 'applications' && <ViewApplications />}
-            {activeView === 'admissions' && <PublishAdmissions />}
-          </main>
-        </div>
+      {/* Main Content */}
+      <div className="lo-main-content">
+        {/* Sidebar */}
+        <aside className={`lo-sidebar-wrapper ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+          <div className="lo-sidebar-backdrop" onClick={toggleMobileMenu}></div>
+          <div className="lo-sidebar-content">
+            <InstituteSidebar 
+              activeView={activeView} 
+              setActiveView={setActiveView}
+              onItemClick={() => setMobileMenuOpen(false)}
+            />
+          </div>
+        </aside>
+
+        {/* Content Area */}
+        <main className="lo-content-area">
+          <div className="lo-banner">
+            <div className="lo-banner-content">
+              <h1 className="lo-banner-title">
+                Welcome, {instituteData.name || 'Institute'}
+              </h1>
+              <p className="lo-banner-subtitle">
+                Manage your institution's faculties, courses, and admissions.
+              </p>
+            </div>
+          </div>
+
+          {activeView === 'profile' && <InstitutionProfile />}
+          {activeView === 'faculties' && <ManageFaculties />}
+          {activeView === 'courses' && <ManageCourses />}
+          {activeView === 'applications' && <ViewApplications />}
+          {activeView === 'admissions' && <PublishAdmissions />}
+        </main>
       </div>
 
       <footer className="lo-footer">
-        <div className="lo-footer-logo">Lesotho Opportunities - Institute Portal</div>
-        <div className="lo-copyright">© 2025 Lesotho Opportunities</div>
+        <div className="lo-footer-logo">Lesotho Opportunities</div>
+        <p className="lo-copyright">© {new Date().getFullYear()} • Institute Portal</p>
       </footer>
     </div>
   );

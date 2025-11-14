@@ -1,6 +1,6 @@
 // src/components/CompanyAuth.js
 import React, { useState } from 'react';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import '../styles/AuthShared.css';
@@ -14,31 +14,39 @@ const CompanyAuth = () => {
   const [purpose, setPurpose] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setLoading(true);
 
     try {
       if (isLogin) {
+        // Login - no email verification required
         await signInWithEmailAndPassword(auth, email, password);
         navigate('/company-dashboard');
       } else {
+        // Registration with email verification
         if (!agreeToRules) throw new Error('You must agree to follow the platform rules.');
         if (!purpose.trim()) throw new Error('Please describe your purpose.');
 
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // ✅ Save full company record with logoUrl
+        // Send email verification
+        await sendEmailVerification(user);
+
+        // Save company data (user is not fully verified yet, but we store the data)
         await setDoc(doc(db, 'companies', user.uid), {
           name: email.split('@')[0], // Temporary name
           email: user.email,
           purpose,
           role: 'Company',
-          isActive: true,           // ✅ Required for public dashboard
+          isActive: false,           // ✅ Not active until email is verified
+          emailVerified: false,      // ✅ Track email verification status
           createdAt: new Date(),
           updatedAt: new Date(),
           logoUrl: '',              // ✅ Field for logo (empty string if not uploaded)
@@ -48,7 +56,10 @@ const CompanyAuth = () => {
           description: ''
         });
 
-        navigate('/company-dashboard');
+        setSuccessMessage('Registration successful! Please check your email to verify your account before logging in.');
+        
+        // Don't navigate to dashboard yet - wait for email verification
+        // User will need to verify email first, then login separately
       }
     } catch (err) {
       let message = err.message;
@@ -72,6 +83,7 @@ const CompanyAuth = () => {
       <div className="auth-card">
         <h2 className="auth-title">{isLogin ? 'Company Login' : 'Company Registration'}</h2>
         {error && <div className="auth-error">{error}</div>}
+        {successMessage && <div className="auth-success">{successMessage}</div>}
         <form onSubmit={handleSubmit}>
           <div className="auth-form-group">
             <label>Company Email</label>

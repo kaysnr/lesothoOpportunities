@@ -1,6 +1,7 @@
+
 // src/components/StudentAuth.js
 import React, { useState } from 'react';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import '../styles/AuthShared.css';
@@ -14,32 +15,43 @@ const StudentAuth = () => {
   const [purpose, setPurpose] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setLoading(true);
 
     try {
       if (isLogin) {
+        // Login - no email verification required
         await signInWithEmailAndPassword(auth, email, password);
-        navigate('/student-dashboard'); // ✅ Redirect after login
+        navigate('/student-dashboard');
       } else {
+        // Registration with email verification
         if (!agreeToRules) throw new Error('You must agree to follow the platform rules.');
         if (!purpose.trim()) throw new Error('Please describe your purpose.');
 
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
+        // Send email verification
+        await sendEmailVerification(user);
+
         await setDoc(doc(db, 'students', user.uid), {
           email: user.email,
           purpose,
           createdAt: new Date(),
-          role: 'Student'
+          role: 'Student',
+          emailVerified: false,      // ✅ Track email verification status
+          isActive: false           // ✅ Not active until email is verified
         });
 
-        navigate('/student-dashboard'); // ✅ Redirect after register
+        setSuccessMessage('Registration successful! Please check your email to verify your account before logging in.');
+        
+        // Don't navigate to dashboard yet - wait for email verification
       }
     } catch (err) {
       setError(err.message || 'Authentication failed');
@@ -53,6 +65,7 @@ const StudentAuth = () => {
       <div className="auth-card">
         <h2 className="auth-title">{isLogin ? 'Student Login' : 'Student Registration'}</h2>
         {error && <div className="auth-error">{error}</div>}
+        {successMessage && <div className="auth-success">{successMessage}</div>}
         <form onSubmit={handleSubmit}>
           <div className="auth-form-group">
             <label>Email</label>

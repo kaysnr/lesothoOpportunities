@@ -178,3 +178,249 @@ textarea:focus-visible {
   outline: 2px solid #5d47e6;
   outline-offset: 2px;
 }
+/* src/styles/AuthShared.css */
+
+/* 🎨 Import theme variables — ensure consistency */
+:root {
+  /* If LesothoOpportunities.css is NOT globally imported, duplicate core vars here */
+  --lo-purple-darkest: #0f0c1e;
+  --lo-purple-dark: #1a152e;
+  --lo-purple-mid: #3a2c8c;
+  --lo-purple-main: #5d47e6;
+  --lo-purple-light: #dbeafe;
+  --lo-accent: #ff6b6b;
+  --lo-accent-hover: #ff5252;
+  --lo-accent-light: #ffd9d9;
+  --lo-bg-main: var(--lo-purple-darkest);
+  --lo-bg-card: var(--lo-purple-dark);
+  --lo-text: #ffffff;
+  --lo-text-muted: rgba(255, 255, 255, 0.7);
+  --lo-border: rgba(93, 71, 230, 0.3);
+  --lo-shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.2);
+  --lo-shadow-md: 0 6px 16px rgba(0, 0, 0, 0.25);
+  --lo-shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.3);
+  --lo-transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  --lo-radius: 16px;
+  --lo-radius-lg: 20px;
+}
+
+/* 🔐 Auth Container — full-screen center */
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, var(--lo-purple-mid), var(--lo-purple-main));
+  position: relative;
+  overflow: hidden;
+}
+
+/* 🌌 Optional floating orb (like in banner) */
+.auth-container::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.06) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 12s ease-in-out infinite;
+}
+
+.auth-container::after {
+  content: '';
+  position: absolute;
+  bottom: -120px;
+  left: -80px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(255, 107, 107, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 15s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(5deg); }
+}
+
+/* 🪪 Auth Card */
+.auth-card {
+  background: var(--lo-bg-card);
+  border-radius: var(--lo-radius-lg);
+  padding: clamp(32px, 5vw, 48px);
+  width: 100%;
+  max-width: 480px;
+  box-shadow: var(--lo-shadow-lg);
+  position: relative;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--lo-border);
+  animation: slideUp 0.6s ease forwards;
+}
+
+.auth-title {
+  font-size: clamp(1.8rem, 4vw, 2.2rem);
+  font-weight: 800;
+  margin-bottom: 28px;
+  text-align: center;
+  background: linear-gradient(90deg, var(--lo-accent), var(--lo-purple-light));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  position: relative;
+}
+
+.auth-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: var(--lo-purple-main);
+  margin: 12px auto 0;
+  border-radius: 2px;
+}
+
+/* ❗ Error */
+.auth-error {
+  background: rgba(255, 107, 107, 0.15);
+  color: var(--lo-accent);
+  border-left: 4px solid var(--lo-accent);
+  padding: 14px 20px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 24px;
+  font-weight: 500;
+  animation: pulse 1.5s infinite;
+}
+
+/* 🧩 Form Group */
+.auth-form-group {
+  margin-bottom: 20px;
+}
+
+.auth-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--lo-text);
+  font-size: 0.95rem;
+}
+
+.auth-form-group input,
+.auth-form-group textarea {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--lo-border);
+  border-radius: 12px;
+  color: var(--lo-text);
+  font-size: 1rem;
+  outline: none;
+  transition: var(--lo-transition);
+}
+
+.auth-form-group input:focus,
+.auth-form-group textarea:focus {
+  border-color: var(--lo-purple-main);
+  background: rgba(93, 71, 230, 0.1);
+  box-shadow: 0 0 0 3px rgba(93, 71, 230, 0.2);
+}
+
+.auth-form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* ☑️ Checkbox */
+.auth-form-group.checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.auth-form-group.checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--lo-accent);
+  margin-top: 4px;
+}
+
+.auth-form-group.checkbox label {
+  margin-bottom: 0;
+  font-weight: 500;
+  color: var(--lo-text-muted);
+}
+
+/* 🖱️ Submit Button */
+.auth-submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--lo-accent);
+  color: var(--lo-purple-darkest);
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: var(--lo-transition);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.auth-submit-btn:hover:not(:disabled) {
+  background: var(--lo-accent-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(255, 107, 107, 0.45);
+}
+
+.auth-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 🔁 Toggle Link */
+.auth-toggle {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.auth-link-btn {
+  background: none;
+  border: none;
+  color: var(--lo-purple-light);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: var(--lo-transition);
+  font-size: 0.95rem;
+}
+
+.auth-link-btn:hover {
+  background: rgba(93, 71, 230, 0.2);
+  color: white;
+  transform: translateX(4px);
+}
+
+/* 📱 Responsive */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 24px 20px;
+  }
+  .auth-title {
+    font-size: 1.8rem;
+  }
+}
+.auth-success {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px solid #c3e6cb;
+  text-align: center;
+}

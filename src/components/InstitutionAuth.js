@@ -1,6 +1,6 @@
 // src/components/InstitutionAuth.js
 import React, { useState } from 'react';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import '../styles/AuthShared.css';
@@ -14,23 +14,30 @@ const InstitutionAuth = () => {
   const [purpose, setPurpose] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setLoading(true);
 
     try {
       if (isLogin) {
+        // Login - no email verification required
         await signInWithEmailAndPassword(auth, email, password);
         navigate('/institute-dashboard');
       } else {
+        // Registration with email verification
         if (!agreeToRules) throw new Error('You must agree to follow the platform rules.');
         if (!purpose.trim()) throw new Error('Please describe your purpose.');
 
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+
+        // Send email verification
+        await sendEmailVerification(user);
 
         // ✅ CRITICAL: Save required fields for dashboard visibility
         await setDoc(doc(db, 'institutions', user.uid), {
@@ -38,7 +45,8 @@ const InstitutionAuth = () => {
           email: user.email,
           purpose,
           role: 'Institution',
-          isActive: true,           // ✅ Required for public dashboard
+          isActive: false,           // ✅ Not active until email is verified
+          emailVerified: false,      // ✅ Track email verification status
           createdAt: new Date(),    // ✅ Required for "latest" sorting
           updatedAt: new Date(),
           logoUrl: '',
@@ -46,7 +54,9 @@ const InstitutionAuth = () => {
           contact: ''
         });
 
-        navigate('/institute-dashboard');
+        setSuccessMessage('Registration successful! Please check your email to verify your account before logging in.');
+        
+        // Don't navigate to dashboard yet - wait for email verification
       }
     } catch (err) {
       let message = err.message;
@@ -70,6 +80,7 @@ const InstitutionAuth = () => {
       <div className="auth-card">
         <h2 className="auth-title">{isLogin ? 'Institution Login' : 'Institution Registration'}</h2>
         {error && <div className="auth-error">{error}</div>}
+        {successMessage && <div className="auth-success">{successMessage}</div>}
         <form onSubmit={handleSubmit}>
           <div className="auth-form-group">
             <label>Institution Email</label>

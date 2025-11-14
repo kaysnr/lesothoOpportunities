@@ -2,9 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
-import './StudentDashboard.css';
+import '../../styles/LesothoOpportunities.css';
 
-// ✅ Move symbolToPoints OUTSIDE the component (so it's stable)
 const SYMBOL_TO_POINTS = {
   'A+': 4.0, 'A': 4.0, 'A-': 3.7,
   'B+': 3.3, 'B': 3.0, 'B-': 2.7,
@@ -24,11 +23,9 @@ const Profile = ({ studentId, studentData }) => {
   const [newSubject, setNewSubject] = useState({ name: '', symbol: '' });
   const [gpa, setGpa] = useState(0);
   const [message, setMessage] = useState('');
-
   const [profilePicturePreview, setProfilePicturePreview] = useState('');
   const [transcriptFileName, setTranscriptFileName] = useState('');
-
-  // Removed symbolToPoints from inside component
+  const [loading, setLoading] = useState(false); // ✅ Added loading state
 
   useEffect(() => {
     if (studentData) {
@@ -40,44 +37,39 @@ const Profile = ({ studentId, studentData }) => {
         education: studentData.education || ''
       });
       setSubjects(studentData.subjects || []);
-      
       if (studentData.profilePictureUrl) {
         setProfilePicturePreview(studentData.profilePictureUrl);
       }
-      if (studentData.transcriptUrl) {
-        setTranscriptFileName(studentData.transcriptFileName || 'Transcript uploaded');
+      if (studentData.transcriptFileName) {
+        setTranscriptFileName(studentData.transcriptFileName);
       }
     }
   }, [studentData]);
 
-  // ✅ Now safe: SYMBOL_TO_POINTS is stable, no need in deps
   useEffect(() => {
     if (subjects.length > 0) {
-      const totalPoints = subjects.reduce((sum, subj) => {
-        return sum + (SYMBOL_TO_POINTS[subj.symbol] || 0);
-      }, 0);
-      const avg = totalPoints / subjects.length;
-      setGpa(parseFloat(avg.toFixed(2)));
+      const totalPoints = subjects.reduce((sum, subj) => sum + (SYMBOL_TO_POINTS[subj.symbol] || 0), 0);
+      setGpa(parseFloat((totalPoints / subjects.length).toFixed(2)));
     } else {
       setGpa(0);
     }
-  }, [subjects]); // ✅ No warning — SYMBOL_TO_POINTS is constant
+  }, [subjects]);
 
   const handleAddSubject = () => {
-    if (newSubject.name && newSubject.symbol) {
+    if (newSubject.name && newSubject.symbol && SYMBOL_TO_POINTS[newSubject.symbol]) {
       setSubjects([...subjects, newSubject]);
       setNewSubject({ name: '', symbol: '' });
     }
   };
 
   const handleRemoveSubject = (index) => {
-    const updated = subjects.filter((_, i) => i !== index);
-    setSubjects(updated);
+    setSubjects(subjects.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
+    setLoading(true); // ✅ Start loading
 
     try {
       await updateDoc(doc(db, 'students', studentId), {
@@ -86,172 +78,188 @@ const Profile = ({ studentId, studentData }) => {
         gpa: Number(gpa),
         updatedAt: new Date(),
       });
-
-      setMessage('Profile updated successfully!');
+      setMessage('✅ Profile updated successfully!');
     } catch (error) {
       console.error('Update error:', error);
-      setMessage('Failed to update profile. Please try again.');
+      setMessage('❌ Failed to update profile. Please try again.');
+    } finally {
+      setLoading(false); // ✅ Stop loading
+    }
+  };
+
+  const handleProfilePictureChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => setProfilePicturePreview(event.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleTranscriptChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setTranscriptFileName(file.name);
     }
   };
 
   return (
-    <div className="profile-editor">
-      <h2>My Profile</h2>
+    <div className="lo-institute-module">
+      <div className="lo-module-header">
+        <h2>
+          <i className="fas fa-user-cog"></i> My Profile
+        </h2>
+        <p>Update your personal and academic information</p>
+      </div>
+
       {message && (
-        <div className={`profile-message ${message.includes('successfully') ? 'success' : 'error'}`}>
+        <div className={`lo-alert ${message.includes('✅') ? 'lo-alert-success' : 'lo-alert-error'}`}>
           {message}
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="lo-form">
         {/* Profile Picture Upload */}
-        <div className="form-group upload-section">
+        <div className="lo-form-group">
           <label>Profile Picture</label>
-          <div className="upload-box">
+          <div className="lo-upload-box">
             {profilePicturePreview ? (
-              <img src={profilePicturePreview} alt="Profile preview" className="upload-preview" />
+              <img src={profilePicturePreview} alt="Profile preview" className="lo-upload-preview" />
             ) : (
-              <div className="upload-placeholder">
-                <i className="fas fa-user-circle upload-icon"></i>
+              <div className="lo-upload-placeholder">
+                <i className="fas fa-user-circle lo-upload-icon"></i>
                 <p>No image selected</p>
               </div>
             )}
-            <label className="upload-btn">
+            <label className="lo-upload-btn">
               Choose Image
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) setProfilePicturePreview(URL.createObjectURL(file));
-                }}
-                style={{ display: 'none' }}
-              />
+              <input type="file" accept="image/*" onChange={handleProfilePictureChange} style={{ display: 'none' }} />
             </label>
           </div>
-          <p className="upload-hint">Recommended: JPG/PNG, max 2MB</p>
+          <p className="lo-upload-hint">JPG/PNG, max 2MB</p>
         </div>
 
         {/* Transcript Upload */}
-        <div className="form-group upload-section">
+        <div className="lo-form-group">
           <label>Academic Transcript or Certificate (PDF)</label>
-          <div className="upload-box file-upload">
+          <div className="lo-upload-box lo-file-upload">
             {transcriptFileName ? (
-              <div className="file-preview">
-                <i className="fas fa-file-pdf pdf-icon"></i>
+              <div className="lo-file-preview">
+                <i className="fas fa-file-pdf lo-pdf-icon"></i>
                 <span>{transcriptFileName}</span>
               </div>
             ) : (
-              <div className="upload-placeholder">
-                <i className="fas fa-file-upload upload-icon"></i>
+              <div className="lo-upload-placeholder">
+                <i className="fas fa-file-upload lo-upload-icon"></i>
                 <p>No file selected</p>
               </div>
             )}
-            <label className="upload-btn">
+            <label className="lo-upload-btn">
               Choose PDF
-              <input
-                type="file"
-                accept=".pdf"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) setTranscriptFileName(file.name);
-                }}
-                style={{ display: 'none' }}
-              />
+              <input type="file" accept=".pdf" onChange={handleTranscriptChange} style={{ display: 'none' }} />
             </label>
           </div>
-          <p className="upload-hint">Only PDF files allowed</p>
+          <p className="lo-upload-hint">PDF files only</p>
         </div>
 
         {/* Basic Info */}
-        <div className="form-row">
-          <div className="form-group">
-            <label>First Name</label>
+        <div className="lo-form-row">
+          <div className="lo-form-group">
+            <label>First Name *</label>
             <input
               value={formData.firstName}
               onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
               required
+              className="lo-form-control"
             />
           </div>
-          <div className="form-group">
-            <label>Last Name</label>
+          <div className="lo-form-group">
+            <label>Last Name *</label>
             <input
               value={formData.lastName}
               onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
               required
+              className="lo-form-control"
             />
           </div>
         </div>
 
-        <div className="form-group">
+        <div className="lo-form-group">
           <label>Education Level</label>
           <input
             value={formData.education}
             onChange={(e) => setFormData({ ...formData, education: e.target.value })}
             placeholder="e.g., High School, Bachelor's Degree"
+            className="lo-form-control"
           />
         </div>
 
-        <div className="form-group">
+        <div className="lo-form-group">
           <label>Phone</label>
           <input
             type="tel"
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            className="lo-form-control"
           />
         </div>
 
-        <div className="form-group">
+        <div className="lo-form-group">
           <label>Address</label>
           <textarea
             value={formData.address}
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             rows="3"
+            className="lo-form-control"
           />
         </div>
 
         {/* Subjects */}
-        <div className="form-group">
+        <div className="lo-form-group">
           <label>Academic Subjects</label>
-          <div className="subjects-input">
+          <div className="lo-subjects-input">
             <input
               placeholder="Subject name"
               value={newSubject.name}
               onChange={(e) => setNewSubject({ ...newSubject, name: e.target.value })}
+              className="lo-form-control"
             />
             <select
               value={newSubject.symbol}
               onChange={(e) => setNewSubject({ ...newSubject, symbol: e.target.value })}
+              className="lo-form-control"
             >
               <option value="">Select Grade</option>
               {Object.keys(SYMBOL_TO_POINTS).map((sym) => (
                 <option key={sym} value={sym}>{sym}</option>
               ))}
             </select>
-            <button type="button" onClick={handleAddSubject} className="add-subject-btn">
+            <button type="button" onClick={handleAddSubject} className="lo-btn lo-btn-secondary">
               Add
             </button>
           </div>
 
-          <div className="subjects-list">
+          <div className="lo-subjects-list">
             {subjects.map((subj, i) => (
-              <div key={i} className="subject-item">
+              <div key={i} className="lo-subject-item">
                 <span>{subj.name} — <strong>{subj.symbol}</strong></span>
-                <button type="button" onClick={() => handleRemoveSubject(i)} className="remove-subject">
-                  ×
-                </button>
+                <button type="button" onClick={() => handleRemoveSubject(i)} className="lo-remove-subject">×</button>
               </div>
             ))}
           </div>
         </div>
 
         {subjects.length > 0 && (
-          <div className="gpa-display">
+          <div className="lo-gpa-display">
             <strong>Calculated GPA:</strong> {gpa} / 4.0
           </div>
         )}
 
-        <button type="submit" className="save-btn">Save Profile</button>
+        <div className="lo-form-actions">
+          <button type="submit" className="lo-btn lo-btn-primary" disabled={loading}>
+            <i className="fas fa-save"></i> Save Profile
+          </button>
+        </div>
       </form>
     </div>
   );

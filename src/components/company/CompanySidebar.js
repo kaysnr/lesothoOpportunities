@@ -9,23 +9,26 @@ const CompanySidebar = ({ activeView, setActiveView }) => {
   ];
 
   return (
-    <aside className="lo-sidebar">
+    <nav className="lo-sidebar">
       <div className="lo-sidebar-section">
-        <h3 className="lo-sidebar-title"><i className="fas fa-building"></i> Company Portal</h3>
-        <ul className="lo-sidebar-menu">
-          {menuItems.map((item) => (
-            <div
-              key={item.id}
-              className={`lo-sidebar-item ${activeView === item.id ? 'active' : ''}`}
-              onClick={() => setActiveView(item.id)}
-            >
-              <i className={`fas ${item.icon}`}></i>
-              {item.label}
-            </div>
-          ))}
-        </ul>
+        <h3 className="lo-sidebar-title">
+          <i className="fas fa-building"></i> Company Portal
+        </h3>
+        {menuItems.map(item => (
+          <div
+            key={item.id}
+            className={`lo-sidebar-item ${activeView === item.id ? 'active' : ''}`}
+            onClick={() => setActiveView(item.id)}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && setActiveView(item.id)}
+          >
+            <i className={`fas ${item.icon}`}></i>
+            <span>{item.label}</span>
+          </div>
+        ))}
       </div>
-    </aside>
+    </nav>
   );
 };
 
